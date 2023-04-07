@@ -13,6 +13,8 @@ type Snake struct {
 	lastX, lastY float64
 	body         []*body
 	delta    DELTA
+	BitSelf bool
+	HitWall bool
 }
 
 func New() (*Snake, error) {
@@ -23,6 +25,8 @@ func New() (*Snake, error) {
 	s.lastX = s.xPos
 	s.lastY = s.yPos
 	s.delta = deltas[UP]
+	s.BitSelf = false
+	s.HitWall = false
 
 	s.body = make([]*body, 0)
 
@@ -61,11 +65,24 @@ func (s *Snake) Update() error {
 	s.xPos += s.delta[0]
 	s.yPos += s.delta[1]
 
-	if s.xPos >= (s.lastX+1) || s.xPos < s.lastX || s.yPos >= (s.lastY+1) || s.yPos < s.lastY {
-		s.body[0].update(s.lastX, s.lastY)
+	if !(s.xPos >= (s.lastX+1) || s.xPos < s.lastX || s.yPos >= (s.lastY+1) || s.yPos < s.lastY) {
+		return nil
+	}
 
-		s.lastX = math.Floor(s.xPos)
-		s.lastY = math.Floor(s.yPos)
+	s.body[0].update(s.lastX, s.lastY)
+
+	if s.xPos < 0 || s.xPos > 15 || s.yPos < 0 || s.yPos > 15 {
+		s.HitWall = true
+		return nil
+	}
+
+	s.lastX = math.Floor(s.xPos)
+	s.lastY = math.Floor(s.yPos)
+
+	for _, b := range s.body {
+		if s.TouchesPos(b.xPos, b.yPos) {
+			s.BitSelf = true
+		}
 	}
 
 	return nil
@@ -81,11 +98,6 @@ func (s *Snake) Grow() {
 	s.body = append(s.body, newBody)
 }
 
-func (s *Snake) TouchesApple(aX, aY float64) bool {
-	// // sqrt( (x2 - x1)^2 + (y2 - y1)^2) )
-	// x := math.Pow((dst.X - p.X), 2)
-	// y := math.Pow((dst.Y - p.Y), 2)
-	// return math.Sqrt(x + y)
-
+func (s *Snake) TouchesPos(aX, aY float64) bool {
 	return math.Floor(s.xPos) == math.Floor(aX) && math.Floor(s.yPos) == math.Floor(aY)
 }
