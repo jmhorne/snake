@@ -9,9 +9,14 @@ import (
 
 type body struct {
 	xPos, yPos float64
+	next       *body
 }
 
 func (b *body) update(dX, dY float64) {
+	if b.next != nil {
+		b.next.update(b.xPos, b.yPos)
+	}
+
 	b.xPos = dX
 	b.yPos = dY
 }

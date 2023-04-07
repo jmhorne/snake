@@ -1,7 +1,6 @@
 package snake
 
 import (
-	"image/color"
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -9,33 +8,26 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
-var (
-	headColor          = color.RGBA{0xFF, 0x25, 0xa1, 0xFF}
-	bodyColor          = color.RGBA{0xFF, 0, 0, 0xFF}
-	bodyRadius float32 = 16
-)
-
 type Snake struct {
 	xPos, yPos   float64
-	dX, dY, d    float64
 	lastX, lastY float64
 	body         []*body
+	delta    DELTA
 }
 
 func New() (*Snake, error) {
 	s := new(Snake)
 
 	s.xPos = 0
-	s.yPos = 13
+	s.yPos = 14
 	s.lastX = s.xPos
 	s.lastY = s.yPos
-	s.d = 0.1
-	s.dX = 0
-	s.dY = -s.d
+	s.delta = deltas[UP]
 
 	s.body = make([]*body, 0)
 
 	s.body = append(s.body, &body{xPos: s.xPos, yPos: s.yPos + 1})
+
 	return s, nil
 }
 
@@ -54,29 +46,23 @@ func (s *Snake) Draw(screen *ebiten.Image) {
 func (s *Snake) Update() error {
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
-		s.dX = 0
-		s.dY = -s.d
+		s.delta = deltas[UP]
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
-		s.dX = 0
-		s.dY = s.d
+		s.delta = deltas[DOWN]
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
-		s.dX = -s.d
-		s.dY = 0
+		s.delta = deltas[LEFT]
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
-		s.dX = s.d
-		s.dY = 0
+		s.delta = deltas[RIGHT]
 	}
 
-	s.xPos += s.dX
-	s.yPos += s.dY
+	s.xPos += s.delta[0]
+	s.yPos += s.delta[1]
 
-	if s.xPos >= (s.lastX + 1) || s.xPos < s.lastX || s.yPos >= (s.lastY + 1) || s.yPos < s.lastY {
-		for _, b := range s.body {
-			b.update(s.lastX, s.lastY)
-		}
+	if s.xPos >= (s.lastX+1) || s.xPos < s.lastX || s.yPos >= (s.lastY+1) || s.yPos < s.lastY {
+		s.body[0].update(s.lastX, s.lastY)
 
 		s.lastX = math.Floor(s.xPos)
 		s.lastY = math.Floor(s.yPos)
@@ -86,5 +72,11 @@ func (s *Snake) Update() error {
 }
 
 func (s *Snake) Grow() {
-	
+	tail := s.body[len(s.body) - 1]
+
+	newBody := &body{xPos: tail.xPos - s.delta[0], yPos: tail.yPos - s.delta[1], next: nil}
+
+	tail.next = newBody
+
+	s.body = append(s.body, newBody)
 }
