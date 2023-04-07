@@ -21,7 +21,7 @@ func New() (*Game, error) {
 	var err error
 	g := new(Game)
 	g.player, err = snake.New()
-	g.apple = apple.New(14, 14)
+	g.apple = apple.New(float64(rand.Intn(15)), float64(rand.Intn(15)))
 	g.score = 0
 	return g, err
 }
