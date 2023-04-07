@@ -80,3 +80,12 @@ func (s *Snake) Grow() {
 
 	s.body = append(s.body, newBody)
 }
+
+func (s *Snake) TouchesApple(aX, aY float64) bool {
+	// // sqrt( (x2 - x1)^2 + (y2 - y1)^2) )
+	// x := math.Pow((dst.X - p.X), 2)
+	// y := math.Pow((dst.Y - p.Y), 2)
+	// return math.Sqrt(x + y)
+
+	return math.Floor(s.xPos) == math.Floor(aX) && math.Floor(s.yPos) == math.Floor(aY)
+}
